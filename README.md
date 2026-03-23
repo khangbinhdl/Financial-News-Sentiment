@@ -35,6 +35,18 @@ You can download the pre-trained model weights from this [Google Drive folder](h
 └── README.md                     # This file
 ```
 
+## 📊 Benchmark Performance (Accuracy)
+
+Accuracy values collected from notebook workflow and saved artifacts.
+
+| Model | Test Accuracy |
+| --- | ---: |
+| RNN | 60.82% |
+| LSTM | 63.92% |
+| GRU | 64.95% |
+| DistilBERT | **82.47%** |
+
+
 ## ⚙️ Installation
 
 ### 1. Install Dependencies
@@ -113,4 +125,5 @@ streamlit run ui/app.py --server.port=8501 --server.address=localhost
 - Max Sequence Length: 128
 - Pre-trained: distilbert-base-uncased
 - Training Epochs: 3
+
 
