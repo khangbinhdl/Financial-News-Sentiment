@@ -24,27 +24,25 @@ You can download the pre-trained model weights from this [Google Drive folder](h
 │   └── __init__.py
 ├── ui/                           # Streamlit frontend
 │   └── app.py                    # UI application
+├── docs/                         # Documentation assets
+│   └── images/
+│       └── benchmark.png         # Benchmark chart
 ├── notebooks/                    # Jupyter notebooks
 ├── saved_models/                 # Pre-trained model weights
 │   ├── rnn_model/
 │   ├── lstm_model/
 │   ├── gru_model/
-│   └── distilbert_model/
+│   └── minilm_model/
 ├── requirements.txt              # Python dependencies
 ├── Makefile                      # Commands for easy execution
 └── README.md                     # This file
 ```
 
-## 📊 Benchmark Performance (Accuracy)
+## 📊 Benchmark Performance
 
 Accuracy values collected from notebook workflow and saved artifacts.
 
-| Model | Test Accuracy |
-| --- | ---: |
-| RNN | 60.82% |
-| LSTM | 63.92% |
-| GRU | 64.95% |
-| DistilBERT | **82.47%** |
+![Benchmark performance chart](docs/images/benchmark.png)
 
 
 ## ⚙️ Installation
@@ -103,8 +101,8 @@ streamlit run ui/app.py --server.port=8501 --server.address=localhost
 
 ## 📊 Sentiment Labels
 
-- **Negative** (0): Negative financial sentiment
-- **Neutral** (1): Neutral financial sentiment  
+- **Neutral** (0): Neutral financial sentiment  
+- **Negative** (1): Negative financial sentiment
 - **Positive** (2): Positive financial sentiment
 
 
@@ -112,18 +110,18 @@ streamlit run ui/app.py --server.port=8501 --server.address=localhost
 
 ### Custom Models (RNN, LSTM, GRU)
 
-- Embedding Dimension: 64
-- Hidden Size: 128
+- Embedding Dimension: 128
+- Hidden Size: 256
 - Layers: 2
-- Dropout: 0.2
-- FC Dimension: 32
-- Max Sequence Length: 32
-- Vocab Size: ~20,000
-
-### DistilBERT
-
+- Dropout: 0.3
+- FC Dimension: 128
 - Max Sequence Length: 128
-- Pre-trained: distilbert-base-uncased
-- Training Epochs: 3
+- Vocab Size: 15,000
+
+### MiniLM
+
+- Max Sequence Length: 512
+- Pre-trained: sentence-transformers/all-MiniLM-L12-v2
+- Training Epochs: 10
 
 

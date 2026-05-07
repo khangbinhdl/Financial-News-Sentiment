@@ -4,9 +4,7 @@ Streamlit frontend for sentiment analysis.
 import streamlit as st
 import requests
 import pandas as pd
-from typing import Dict
-import matplotlib.pyplot as plt
-import numpy as np
+from typing import Dict, List
 
 # Page configuration
 st.set_page_config(
@@ -21,10 +19,6 @@ st.markdown(
     <style>
     .main {
         padding: 2rem;
-    }
-    .title {
-        color: #1f77b4;
-        font-weight: bold;
     }
     </style>
     """,
@@ -46,17 +40,34 @@ def fetch_available_models():
             "⚠️ Cannot connect to API server. Please make sure the API is running on http://127.0.0.1:8000"
         )
         return None
+
+
+def fetch_available_devices() -> List[str]:
+    """Fetch available devices from API health endpoint."""
+    try:
+        response = requests.get(f"{API_URL}/health", timeout=5)
+        if response.status_code == 200:
+            payload = response.json()
+            return payload.get("available_devices", ["cpu"])
+    except requests.exceptions.ConnectionError:
+        st.error(
+            "⚠️ Cannot connect to API server. Please make sure the API is running on http://127.0.0.1:8000"
+        )
+        return ["cpu"]
+    except Exception as e:
+        st.error(f"Error fetching devices: {str(e)}")
+        return ["cpu"]
     except Exception as e:
         st.error(f"Error fetching models: {str(e)}")
         return None
 
 
-def predict_sentiment(text: str, model_name: str):
+def predict_sentiment(text: str, model_name: str, device: str):
     """Call API to predict sentiment."""
     try:
         response = requests.post(
             f"{API_URL}/predict",
-            json={"text": text, "model_name": model_name},
+            json={"text": text, "model_name": model_name, "device": device},
             timeout=30,
         )
         if response.status_code == 200:
@@ -67,50 +78,12 @@ def predict_sentiment(text: str, model_name: str):
     except requests.exceptions.ConnectionError:
         st.error("⚠️ Cannot connect to API server. Please make sure the API is running.")
         return None
-    except Exception as e:
-        st.error(f"Error during prediction: {str(e)}")
-        return None
 
 
-def plot_probabilities(probabilities: Dict[str, float], sentiment: str):
-    """Plot sentiment probabilities."""
-    fig, ax = plt.subplots(figsize=(10, 6))
+def format_label(label: str) -> str:
+    return label.replace("_", " ").title()
 
-    labels = list(probabilities.keys())
-    values = list(probabilities.values())
 
-    # Define colors for each sentiment
-    colors = {"Negative": "#ef553b", "Neutral": "#636efa", "Positive": "#00cc96"}
-    bar_colors = [colors.get(label, "#636efa") for label in labels]
-
-    # Highlight the predicted sentiment
-    bar_colors = [
-        colors.get(label, "#636efa") if label != sentiment else "gold" for label in labels
-    ]
-
-    bars = ax.bar(labels, values, color=bar_colors, edgecolor="black", linewidth=1.5)
-
-    # Add value labels on bars
-    for bar, value in zip(bars, values):
-        height = bar.get_height()
-        ax.text(
-            bar.get_x() + bar.get_width() / 2.0,
-            height,
-            f"{value:.2%}",
-            ha="center",
-            va="bottom",
-            fontsize=12,
-            fontweight="bold",
-        )
-
-    ax.set_ylabel("Probability", fontsize=12, fontweight="bold")
-    ax.set_xlabel("Sentiment", fontsize=12, fontweight="bold")
-    ax.set_title("Sentiment Probability Distribution", fontsize=14, fontweight="bold")
-    ax.set_ylim(0, max(values) * 1.15)
-    ax.grid(axis="y", alpha=0.3, linestyle="--")
-
-    plt.tight_layout()
-    return fig
 
 
 def main():
@@ -128,27 +101,50 @@ def main():
 
     st.divider()
 
-    # Sidebar
-    with st.sidebar:
-        st.header("⚙️ Settings")
+    models = fetch_available_models()
+    if models:
+        model_options = {model["name"]: model["key"] for model in models}
+    else:
+        st.warning("Models not available. Check if API is running.")
+        return
 
-        # Fetch available models
-        models = fetch_available_models()
-
-        if models:
-            model_options = {model["name"]: model["key"] for model in models}
-            selected_model_name = st.selectbox(
-                "Select Model",
-                options=list(model_options.keys()),
-                help="Choose which model to use for sentiment analysis",
-            )
-            selected_model = model_options[selected_model_name]
+    devices = fetch_available_devices()
+    if not devices:
+        devices = ["cpu"]
+    available_devices = set(devices)
+    device_catalog = [("CPU", "cpu"), ("CUDA", "cuda"), ("MPS", "mps")]
+    device_options = []
+    device_value_map = {}
+    for label, value in device_catalog:
+        if value in available_devices:
+            option_label = label
         else:
-            st.warning("Models not available. Check if API is running.")
-            return
+            option_label = f"{label} (unavailable)"
+        device_options.append(option_label)
+        device_value_map[option_label] = value
 
-        st.divider()
-        st.markdown("### About")
+    settings_col, info_col, status_col = st.columns([2, 1.5, 1])
+
+    with settings_col:
+        st.subheader("⚙️ Model & Device")
+        selected_model_name = st.selectbox(
+            "Select Model",
+            options=list(model_options.keys()),
+            help="Choose which model to use for sentiment analysis",
+        )
+        selected_model = model_options[selected_model_name]
+        selected_device_label = st.selectbox(
+            "Select Device",
+            options=device_options,
+            help="Choose device for inference",
+        )
+        selected_device = device_value_map[selected_device_label]
+        device_available = selected_device in available_devices
+        if not device_available:
+            st.warning("Selected device is not available on this machine.")
+
+    with info_col:
+        st.subheader("ℹ️ About")
         st.markdown(
             """
             This application uses trained models to classify financial news as:
@@ -157,6 +153,11 @@ def main():
             - **Positive** 📈
             """
         )
+
+    with status_col:
+        st.subheader("✅ Ready")
+        st.metric(label="Model", value=selected_model_name)
+        st.metric(label="Device", value=selected_device.upper())
 
     # Main content
     col1, col2 = st.columns([2, 1])
@@ -171,17 +172,26 @@ def main():
 
     with col2:
         st.subheader("🎯 Model Info")
-        st.info(f"**Selected Model:** {selected_model_name}")
+        st.info(
+            f"**Selected Model:** {selected_model_name}\n\n**Device:** {selected_device.upper()}"
+        )
 
     st.divider()
 
     # Predict button
-    if st.button("🔍 Analyze Sentiment", use_container_width=True, type="primary"):
+    if st.button(
+        "🔍 Analyze Sentiment",
+        use_container_width=True,
+        type="primary",
+        disabled=not device_available,
+    ):
         if not text_input or not text_input.strip():
             st.warning("⚠️ Please enter some text to analyze.")
         else:
             with st.spinner("🔄 Analyzing sentiment..."):
-                result = predict_sentiment(text_input.strip(), selected_model)
+                result = predict_sentiment(
+                    text_input.strip(), selected_model, selected_device
+                )
 
             if result:
                 st.success("✅ Analysis completed!")
@@ -192,7 +202,7 @@ def main():
                 with col1:
                     st.metric(
                         label="Predicted Sentiment",
-                        value=result["sentiment"],
+                        value=format_label(result["sentiment"]),
                         delta=None,
                     )
 
@@ -213,22 +223,15 @@ def main():
 
                 st.divider()
 
-                # Display probability distribution
-                st.subheader("📊 Probability Distribution")
-
-                # Chart
-                fig = plot_probabilities(result["probabilities"], result["sentiment"])
-                st.pyplot(fig)
-
                 # Detailed probabilities table
-                st.subheader("📋 Detailed Results")
+                st.subheader("📋 Class Probabilities")
 
                 prob_data = []
                 for sentiment, prob in result["probabilities"].items():
                     is_predicted = "✓" if sentiment == result["sentiment"] else ""
                     prob_data.append(
                         {
-                            "Sentiment": f"{sentiment} {is_predicted}",
+                            "Sentiment": f"{format_label(sentiment)} {is_predicted}",
                             "Probability": f"{prob:.4f}",
                             "Percentage": f"{prob:.2%}",
                         }
@@ -242,7 +245,7 @@ def main():
     st.markdown(
         """
         <div style='text-align: center; color: #999; font-size: 12px; padding: 20px;'>
-            <p>💡 Tip: Try different models to compare their predictions</p>
+            <p>💡 Tip: Compare custom RNNs vs MiniLM on the same headline</p>
             <p>🔗 API: http://127.0.0.1:8000</p>
         </div>
         """,

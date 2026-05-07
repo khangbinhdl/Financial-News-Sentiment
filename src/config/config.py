@@ -9,56 +9,57 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 # Paths
 SAVED_MODELS_DIR = PROJECT_ROOT / "saved_models"
-TOKEN_PADDING_SIZE = 32
 
 # Model configurations
 MODEL_CONFIGS = {
     "rnn": {
         "name": "RNN",
-        "model_path": SAVED_MODELS_DIR / "rnn_model" / "model_state_dict.pt",
+        "model_path": SAVED_MODELS_DIR / "rnn_model",
         "tokenizer_path": SAVED_MODELS_DIR / "rnn_model",
         "type": "custom",
-        "embedding_dim": 64,
-        "hidden_size": 128,
+        "embedding_dim": 128,
+        "hidden_size": 256,
         "n_layers": 2,
-        "dropout_prob": 0.2,
-        "fc_dim": 32,
+        "dropout_prob": 0.3,
+        "fc_dim": 128,
     },
     "lstm": {
         "name": "LSTM",
-        "model_path": SAVED_MODELS_DIR / "lstm_model" / "model_state_dict.pt",
+        "model_path": SAVED_MODELS_DIR / "lstm_model",
         "tokenizer_path": SAVED_MODELS_DIR / "lstm_model",
         "type": "custom",
-        "embedding_dim": 64,
-        "hidden_size": 128,
+        "embedding_dim": 128,
+        "hidden_size": 256,
         "n_layers": 2,
-        "dropout_prob": 0.2,
-        "fc_dim": 32,
+        "dropout_prob": 0.3,
+        "bidirectional": True,
+        "fc_dim": 128,
     },
     "gru": {
         "name": "GRU",
-        "model_path": SAVED_MODELS_DIR / "gru_model" / "model_state_dict.pt",
+        "model_path": SAVED_MODELS_DIR / "gru_model",
         "tokenizer_path": SAVED_MODELS_DIR / "gru_model",
         "type": "custom",
-        "embedding_dim": 64,
-        "hidden_size": 128,
+        "embedding_dim": 128,
+        "hidden_size": 256,
         "n_layers": 2,
-        "dropout_prob": 0.2,
-        "fc_dim": 32,
+        "dropout_prob": 0.3,
+        "bidirectional": True,
+        "fc_dim": 128,
     },
-    "distilbert": {
-        "name": "DistilBERT",
-        "model_path": SAVED_MODELS_DIR / "distilbert_model",
-        "tokenizer_path": SAVED_MODELS_DIR / "distilbert_model",
+    "minilm": {
+        "name": "MiniLM",
+        "model_path": SAVED_MODELS_DIR / "minilm_model",
+        "tokenizer_path": SAVED_MODELS_DIR / "minilm_model",
         "type": "hf_bert",
     },
 }
 
 # Sentiment labels
 SENTIMENT_LABELS = {
-    0: "Negative",
-    1: "Neutral",
-    2: "Positive",
+    0: "neutral",
+    1: "negative",
+    2: "positive",
 }
 
 # API configuration

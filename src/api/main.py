@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List
+import torch
 
 from src.models.model_loader import ModelLoader, predict
 from src.config.config import MODEL_CONFIGS, SENTIMENT_LABELS
@@ -34,7 +35,8 @@ class PredictionRequest(BaseModel):
     """Request model for prediction."""
 
     text: str
-    model_name: str = "distilbert"
+    model_name: str = "minilm"
+    device: str = "cpu"
 
 
 class SentimentResult(BaseModel):
@@ -87,11 +89,21 @@ def predict_sentiment(request: PredictionRequest) -> SentimentResult:
             detail=f"Model '{request.model_name}' not found. Available models: {list(MODEL_CONFIGS.keys())}",
         )
 
+    if request.device not in {"cpu", "cuda", "mps"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Device must be one of: cpu, cuda, mps",
+        )
+
     try:
-        sentiment, probabilities = predict(request.text, request.model_name, model_loader)
+        sentiment, probabilities = predict(
+            request.text, request.model_name, request.device, model_loader
+        )
         return SentimentResult(
             sentiment=sentiment, probabilities=probabilities, model_used=request.model_name
         )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
@@ -99,10 +111,17 @@ def predict_sentiment(request: PredictionRequest) -> SentimentResult:
 @app.get("/health", tags=["Health"])
 def health_check():
     """Detailed health check."""
+    available_devices = ["cpu"]
+    if torch.cuda.is_available():
+        available_devices.append("cuda")
+    if torch.backends.mps.is_available():
+        available_devices.append("mps")
+
     return {
         "status": "healthy",
         "available_models": list(MODEL_CONFIGS.keys()),
         "sentiment_labels": SENTIMENT_LABELS,
+        "available_devices": available_devices,
     }
 
 
