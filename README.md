@@ -5,7 +5,7 @@
 
 This repository is a production-style refactor of the original Colab notebook above, with GitHub Copilot support for code organization, refactoring, and building inference apps (FastAPI + Streamlit).
 
-You can download the pre-trained model weights from this [Google Drive folder]([https://drive.google.com/drive/folders/1aPVjQnKBoHobLIhyTUywnFQi8qnimWbM?usp=sharing](https://drive.google.com/drive/folders/15vxaTy51I8XPOEpMxkgig1qfp_5wExqV?usp=sharing)) and place them in the `saved_models/` directory.
+You can download the pre-trained model weights from this [Google Drive folder](https://drive.google.com/drive/folders/15vxaTy51I8XPOEpMxkgig1qfp_5wExqV?usp=sharing) and place them in the `saved_models/` directory.
 
 ## 📁 Project Structure
 
