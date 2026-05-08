@@ -1,11 +1,11 @@
 # Financial News Sentiment Inference Project
 
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1bBiHOxc63m9JL94JA_SKsgysBBowQP5N?usp=sharing)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://colab.research.google.com/drive/1bBiHOxc63m9JL94JA_SKsgysBBowQP5N?usp=sharing](https://colab.research.google.com/drive/1b_hZuHaE35ZQ3zpJ5BZgFrGjZt2fZ7IB?usp=sharing))
 
 
 This repository is a production-style refactor of the original Colab notebook above, with GitHub Copilot support for code organization, refactoring, and building inference apps (FastAPI + Streamlit).
 
-You can download the pre-trained model weights from this [Google Drive folder](https://drive.google.com/drive/folders/1aPVjQnKBoHobLIhyTUywnFQi8qnimWbM?usp=sharing) and place them in the `saved_models/` directory.
+You can download the pre-trained model weights from this [Google Drive folder]([https://drive.google.com/drive/folders/1aPVjQnKBoHobLIhyTUywnFQi8qnimWbM?usp=sharing](https://drive.google.com/drive/folders/15vxaTy51I8XPOEpMxkgig1qfp_5wExqV?usp=sharing)) and place them in the `saved_models/` directory.
 
 ## 📁 Project Structure
 
